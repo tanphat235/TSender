@@ -3,6 +3,7 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import Image from "next/image"
 import Link from "next/link"
+import { FaChevronDown } from "react-icons/fa"
 import { FaGithub } from "react-icons/fa"
 
 export default function Header() {
@@ -26,7 +27,77 @@ export default function Header() {
                     </div>
                 </div>
 
-                <ConnectButton />
+                <ConnectButton.Custom>
+                    {({
+                        account,
+                        chain,
+                        mounted,
+                        authenticationStatus,
+                        openAccountModal,
+                        openChainModal,
+                        openConnectModal,
+                    }) => {
+                        const ready = mounted && authenticationStatus !== "loading"
+                        const connected = ready && account && chain
+
+                        if (!connected) {
+                            return (
+                                <button
+                                    onClick={openConnectModal}
+                                    type="button"
+                                    className="inline-flex h-10 items-center justify-center rounded-full bg-white px-4 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100"
+                                >
+                                    Connect Wallet
+                                </button>
+                            )
+                        }
+
+                        if (chain.unsupported) {
+                            return (
+                                <button
+                                    onClick={openChainModal}
+                                    type="button"
+                                    className="inline-flex h-10 items-center justify-center rounded-full bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-400"
+                                >
+                                    Wrong Network
+                                </button>
+                            )
+                        }
+
+                        return (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={openChainModal}
+                                    type="button"
+                                    className="inline-flex h-10 items-center gap-2 rounded-full bg-zinc-900 px-3 text-sm font-medium text-white ring-1 ring-white/15 transition hover:bg-zinc-800"
+                                >
+                                    {chain.hasIcon && chain.iconUrl ? (
+                                        <img
+                                            alt={chain.name ?? "Chain icon"}
+                                            src={chain.iconUrl}
+                                            className="h-5 w-5 rounded-full"
+                                        />
+                                    ) : null}
+                                    <span>{chain.name}</span>
+                                    <FaChevronDown className="h-3 w-3 text-zinc-300" />
+                                </button>
+
+                                <button
+                                    onClick={openAccountModal}
+                                    type="button"
+                                    className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-100"
+                                >
+                                    <span>{account.displayName}</span>
+                                    {account.displayBalance ? (
+                                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
+                                            {account.displayBalance}
+                                        </span>
+                                    ) : null}
+                                </button>
+                            </div>
+                        )
+                    }}
+                </ConnectButton.Custom>
             </div>
         </header>
     )
