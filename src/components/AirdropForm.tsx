@@ -1,9 +1,10 @@
 "use client"
 import InputField from "./ui/InputField"
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {chainsToTSender, tsenderAbi, erc20Abi} from "@/constants"
 import { useChainId, useConfig, useAccount } from "wagmi"
 import { readContract } from "@wagmi/core"
+import { calculateTotal } from "@/utils"
 
 
 export default function AirdropForm() {
@@ -13,6 +14,11 @@ export default function AirdropForm() {
     const chainId = useChainId()
     const config = useConfig()
     const account = useAccount()
+    const total: number = useMemo(() => calculateTotal(amounts), [amounts])
+
+    useEffect(() => {
+        console.log("total amount:", total)
+    }, [total])
 
     async function getApprovedAmount(tSenderAddress: string | null): Promise<number> {
         if (!tSenderAddress) {
@@ -38,10 +44,12 @@ export default function AirdropForm() {
         // 4. wait for the transaction to be mined and then show a success message
         // 5. Show an error message if something goes wrong
         const tSenderAddress = chainsToTSender[chainId]["tsender"]
-        console.log("tSenderAddress", tSenderAddress)
-        console.log("chainId", chainId)
         const approvedAmount = await getApprovedAmount(tSenderAddress)
-        console.log("approvedAmount", approvedAmount)
+
+        if (approvedAmount < total) {
+            alert("Not enough approved amount")
+            return
+        }
     }
     // if that field thing that we made changes, update the tokenAddress and then rerender the whole page
     return (

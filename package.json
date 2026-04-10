@@ -7,7 +7,8 @@
     "anvil:state": "npx @foundry-rs/anvil-win32-amd64 --load-state tsender-deployed.json",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run --config vitest.config.mts"
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
@@ -27,6 +28,8 @@
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.4"
   }
 }
