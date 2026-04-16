@@ -1,3 +1,5 @@
+// Contract addresses per chain.
+// `chainsToTSender` maps a `chainId` to the deployed `tsender` contract address.
 interface ContractsConfig {
     [chainId: number]: {
         tsender: string
@@ -5,6 +7,7 @@ interface ContractsConfig {
     }
 }
 
+// TSender contract addresses used by the UI.
 export const chainsToTSender: ContractsConfig = {
     324: {
         tsender: "0x7e645Ea4386deb2E9e510D805461aA12db83fb5E",
@@ -36,6 +39,8 @@ export const chainsToTSender: ContractsConfig = {
     }
 }
 
+// ERC-20 ABI fragment used by this app for allowance/approve/transferFrom calls.
+// Wagmi/viem uses the ABI to encode the correct calldata and decode return values.
 export const erc20Abi = [
     {
         anonymous: false,
@@ -644,6 +649,7 @@ export const erc20Abi = [
     },
 ]
 
+// ABI for the TSender contract: currently only includes `airdropERC20` + a helper.
 export const tsenderAbi = [
     {
         type: "function",

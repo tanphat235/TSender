@@ -15,8 +15,11 @@ export default function Providers({ children }: ProvidersProps) {
     const [queryClient] = useState(() => new QueryClient())
 
     return (
+        // Supplies Wagmi hooks (useAccount, useWriteContract, etc.) with the configured chains/providers.
         <WagmiProvider config={wagmiConfig}>
+            // Enables React Query features used by some Wagmi/RainbowKit internals.
             <QueryClientProvider client={queryClient}>
+                // Provides wallet connection UI/logic (RainbowKit).
                 <RainbowKitProvider>{children}</RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>

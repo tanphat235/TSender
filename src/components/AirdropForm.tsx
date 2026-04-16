@@ -2,56 +2,68 @@
 import InputField from "./ui/InputField"
 import { useState, useMemo, useEffect } from "react"
 import {chainsToTSender, tsenderAbi, erc20Abi} from "@/constants"
-import { useChainId, useConfig, useAccount } from "wagmi"
+import { useChainId, useConfig, useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { readContract } from "@wagmi/core"
 import { calculateTotal } from "@/utils"
 
 
 export default function AirdropForm() {
+    // Form inputs (user-provided values).
     const [tokenAddress, setTokenAddress] = useState("")
     const [recipients, setRecipients] = useState("")
     const [amounts, setAmounts] = useState("")
+
+    // Wagmi context: current chain + connected wallet.
     const chainId = useChainId()
     const config = useConfig()
     const account = useAccount()
+
+    // Derived value from the `amounts` input string.
     const total: number = useMemo(() => calculateTotal(amounts), [amounts])
+    const { data: hash, isPending, writeContractAsync } = useWriteContract()
 
     useEffect(() => {
         console.log("total amount:", total)
     }, [total])
 
+    // Read how much the `tsender` contract is allowed to spend from `account.address`.
     async function getApprovedAmount(tSenderAddress: string | null): Promise<number> {
         if (!tSenderAddress) {
             alert("No address found for this chain")
             return 0
         }
-        // read from the chain to see if we have approved enough token
-        // allowance
+        // ERC-20 allowance(owner, spender)
         const response = await readContract(config, {
             abi: erc20Abi,
             address: tokenAddress as `0x${string}`,
             functionName: "allowance",
             args: [account.address as `0x${string}`, tSenderAddress as `0x${string}`],
         })
-        // token/allowance(account, tsender)
+
+        // `allowance` returns uint256; cast for this UI.
         return response as number
     }
 
+    // Submit flow:
+    // 1) Check allowance
+    // 2) If insufficient, send ERC-20 `approve(tsender, total)`
+    // (Further steps like calling `airdropERC20` are not implemented in this file yet.)
     async function handleSubmit() {
-        // 1. If already approved, skip this step
-        // 2. Approve our tsender contract to spend the token on behalf of the user
-        // 3. Call the airdrop function on the tsender contract
-        // 4. wait for the transaction to be mined and then show a success message
-        // 5. Show an error message if something goes wrong
         const tSenderAddress = chainsToTSender[chainId]["tsender"]
         const approvedAmount = await getApprovedAmount(tSenderAddress)
 
         if (approvedAmount < total) {
-            alert("Not enough approved amount")
-            return
+            // Send a write transaction to the ERC-20 token contract.
+            const approvalHash = await writeContractAsync({
+                abi: erc20Abi,
+                address: tokenAddress as `0x${string}`,
+                functionName: "approve",
+                args: [tSenderAddress as `0x${string}`, BigInt(total)],
+            })
         }
     }
-    // if that field thing that we made changes, update the tokenAddress and then rerender the whole page
+
+    // Render the form UI.
     return (
         <div>
             <InputField 
