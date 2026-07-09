@@ -1,3 +1,5 @@
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+allowBuilds:
+  bufferutil: true
+  keccak: true
+  sharp: true
+  utf-8-validate: true
